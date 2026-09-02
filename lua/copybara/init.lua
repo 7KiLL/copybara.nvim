@@ -19,7 +19,7 @@ M.setup = function(opts)
 	end
 end
 
-local get_current_line_with_ref = function()
+local get_current_line_with_ref_abs = function()
 	local abs_path = vim.api.nvim_buf_get_name(0)
 
 	local cursor_location = vim.api.nvim_win_get_cursor(0)
@@ -69,6 +69,12 @@ local function get_rel_file_ref()
 	return vim.fn.expand("%:.")
 end
 
+local function get_current_line_with_ref_rel()
+	local cursor_location = vim.api.nvim_win_get_cursor(0)
+
+	return string.format("%s#L%s", get_rel_file_ref(), cursor_location[1])
+end
+
 ---@class CopybaraMenuItem
 ---@field name string Name of action item
 ---@field handler fun():string Callback for item selection action
@@ -76,37 +82,60 @@ end
 ---@type CopybaraMenuItem[]
 local base_items = {
 	{
-		name = "Get absolute file reference",
-		handler = get_abs_file_ref,
-		desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua",
+		name = "Get line reference (relative)",
+		handler = get_current_line_with_ref_rel,
+		desc = "lua/copybara/init.lua#L50",
+	},
+	{
+		name = "Get line reference (absolute)",
+		handler = get_current_line_with_ref_abs,
+		desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L50",
 	},
 	{
 		name = "Get relative file reference",
 		handler = get_rel_file_ref,
-		desc = "copybara.nvim/lua/copybara/init.lua",
+		desc = "lua/copybara/init.lua",
 	},
 	{
-		name = "Get line reference",
-		handler = get_current_line_with_ref,
-		desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L50",
+		name = "Get absolute file reference",
+		handler = get_abs_file_ref,
+		desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua",
 	},
 }
 
-M.draw_copy_action_menu = function(opts)
+---@param selection Selection
+---@return CopybaraMenuItem[]
+local function selection_items(selection)
 	local abs_path = vim.api.nvim_buf_get_name(0)
-	local items = vim.list_extend({}, base_items)
-	local selection = get_selection(opts)
-	if selection then
+	local rel_lines = string.format("%s#L%d-L%d", get_rel_file_ref(), selection.start.line, selection.finish.line)
+	local abs_lines = string.format("%s#L%d-L%d", abs_path, selection.start.line, selection.finish.line)
+
+	-- Ordered by priority: most useful first
+	local items = {}
+	if selection.text then
 		table.insert(items, {
-			name = "Get selected lines",
+			name = "Get LLM friendly selection",
 			handler = function()
-				return string.format("%s#L%d-L%d", abs_path, selection.start.line, selection.finish.line)
+				return rel_lines .. "\n" .. selection.text
 			end,
-			desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L10-L20",
+			desc = "lua/copybara/init.lua#L10-L20\n<selected text>",
 		})
 	end
-
-	if selection and selection.text then
+	table.insert(items, {
+		name = "Get selected lines (relative)",
+		handler = function()
+			return rel_lines
+		end,
+		desc = "lua/copybara/init.lua#L10-L20",
+	})
+	table.insert(items, {
+		name = "Get selected lines (absolute)",
+		handler = function()
+			return abs_lines
+		end,
+		desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L10-L20",
+	})
+	if selection.text then
 		local ref = string.format(
 			"%s#L%dC%d-L%dC%d",
 			abs_path,
@@ -115,7 +144,6 @@ M.draw_copy_action_menu = function(opts)
 			selection.finish.line,
 			selection.finish.pos
 		)
-		local rel_no_char = string.format("%s#L%d-L%d", get_rel_file_ref(), selection.start.line, selection.finish.line)
 		table.insert(items, {
 			name = "Get selected lines with chars",
 			handler = function()
@@ -123,7 +151,6 @@ M.draw_copy_action_menu = function(opts)
 			end,
 			desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L10C5-L20C12",
 		})
-
 		table.insert(items, {
 			name = "Get selected reference with text",
 			handler = function()
@@ -131,15 +158,15 @@ M.draw_copy_action_menu = function(opts)
 			end,
 			desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L10C5-L20C12\n<selected text>",
 		})
-
-		table.insert(items, {
-			name = "Get LLM friendly selection",
-			handler = function()
-				return rel_no_char .. "\n" .. selection.text
-			end,
-			desc = "copybara.nvim/lua/copybara/init.lua#L10-L20\n<selected text>",
-		})
 	end
+	return items
+end
+
+M.draw_copy_action_menu = function(opts)
+	local selection = get_selection(opts)
+	local items = selection and selection_items(selection) or {}
+	vim.list_extend(items, base_items)
+
 	local longest = 0
 	for _, it in ipairs(items) do
 		longest = math.max(longest, vim.api.nvim_strwidth(it.name))
