@@ -51,7 +51,7 @@ Soon: Dedicated commands for each action
 
 ```lua
 require("copybara").setup({
-  disable_notifcations = false, -- set to true to stop the "Copied!" popup
+  disable_notifications = false, -- set to true to stop the "Copied!" popup
 })
 ```
 

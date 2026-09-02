@@ -1,5 +1,5 @@
 ---@class CopybaraConfig
----@field disable_notifcations? boolean
+---@field disable_notifications? boolean
 
 ---@class CopybaraPlugin
 ---@field setup fun(opts?: CopybaraConfig)
@@ -14,7 +14,7 @@ end
 M.setup = function(opts)
 	opts = opts or {}
 
-	if opts.disable_notifcations then
+	if opts.disable_notifications then
 		notify = function() end
 	end
 end
