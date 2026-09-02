@@ -157,8 +157,4 @@ M.draw_copy_action_menu = function(opts)
 	end)
 end
 
-vim.api.nvim_create_user_command("DrawMenu", function(opts)
-	M.draw_copy_action_menu(opts)
-end, { range = true })
-
 return M
