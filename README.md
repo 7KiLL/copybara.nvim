@@ -56,11 +56,11 @@ Every action also has a name you can pass directly, so you can skip the menu. Ta
 Suggested keymaps:
 
 ```lua
-vim.keymap.set({ "n", "v" }, "<leader>cc", ":Copybara<CR>", { desc = "Copybara menu" })
-vim.keymap.set("n", "<leader>cf", ":Copybara file_rel<CR>", { desc = "Copy relative path" })
-vim.keymap.set("n", "<leader>cl", ":Copybara line_rel<CR>", { desc = "Copy line reference" })
-vim.keymap.set("v", "<leader>cl", ":Copybara range_rel<CR>", { desc = "Copy selected lines" })
-vim.keymap.set("v", "<leader>ca", ":Copybara llm<CR>", { desc = "Copy selection for an LLM" })
+vim.keymap.set({ "n", "v" }, "<leader>Cc", ":Copybara<CR>", { desc = "Copybara menu" })
+vim.keymap.set("n", "<leader>Cf", ":Copybara file_rel<CR>", { desc = "Copy relative path" })
+vim.keymap.set("n", "<leader>Cl", ":Copybara line_rel<CR>", { desc = "Copy line reference" })
+vim.keymap.set("v", "<leader>Cl", ":Copybara range_rel<CR>", { desc = "Copy selected lines" })
+vim.keymap.set("v", "<leader>Ca", ":Copybara llm<CR>", { desc = "Copy selection for an LLM" })
 ```
 
 ## Options
