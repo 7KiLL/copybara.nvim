@@ -30,12 +30,16 @@ end
 local base_items = {
 	{
 		name = "Get line reference (relative)",
-		handler = h.get_current_line_with_ref_rel,
+		handler = function()
+			return h.line_ref(h.get_rel_file_ref())
+		end,
 		desc = "lua/copybara/init.lua#L50",
 	},
 	{
 		name = "Get line reference (absolute)",
-		handler = h.get_current_line_with_ref_abs,
+		handler = function()
+			return h.line_ref(h.get_abs_file_ref())
+		end,
 		desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L50",
 	},
 	{
@@ -53,36 +57,48 @@ local base_items = {
 ---@param selection Selection
 ---@return CopybaraMenuItem[]
 local function selection_items(selection)
-	local abs_path = vim.api.nvim_buf_get_name(0)
+	local rel = h.range_ref(h.get_rel_file_ref(), selection)
+	local abs = h.range_ref(h.get_abs_file_ref(), selection)
+	local chars = selection.text and h.char_range_ref(h.get_abs_file_ref(), selection)
 
 	local items = {}
 	if selection.text then
 		table.insert(items, {
 			name = "Get LLM friendly selection",
-			handler = h.get_llm_friendly_selection(selection),
+			handler = function()
+				return rel .. "\n" .. selection.text
+			end,
 			desc = "lua/copybara/init.lua#L10-L20\n<selected text>",
 		})
 	end
 	table.insert(items, {
 		name = "Get selected lines (relative)",
-		handler = h.get_selected_lines_with_rel_file_ref(selection),
+		handler = function()
+			return rel
+		end,
 		desc = "lua/copybara/init.lua#L10-L20",
 	})
 	table.insert(items, {
 		name = "Get selected lines (absolute)",
-		handler = h.get_selected_lines_with_abs_file_ref(selection),
+		handler = function()
+			return abs
+		end,
 		desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L10-L20",
 	})
 
 	if selection.text then
 		table.insert(items, {
 			name = "Get selected lines with chars",
-			handler = h.get_selected_lines_with_chars_and_abs_file_ref(selection),
+			handler = function()
+				return chars
+			end,
 			desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L10C5-L20C12",
 		})
 		table.insert(items, {
 			name = "Get selected reference with text",
-			handler = h.get_selected_lines_with_chars_abs_file_text_ref(selection),
+			handler = function()
+				return chars .. "\n" .. selection.text
+			end,
 			desc = "/home/l7kill/code/copybara.nvim/lua/copybara/init.lua#L10C5-L20C12\n<selected text>",
 		})
 	end
@@ -105,8 +121,9 @@ M.draw_copy_action_menu = function(opts)
 		end,
 	}, function(it)
 		if it then
-			notify(string.format("Copied!\n%s", it.handler()))
-			utils.copy_to_clipboard(it.handler())
+			local out = it.handler()
+			notify(string.format("Copied!\n%s", out))
+			utils.copy_to_clipboard(out)
 		end
 	end)
 end
