@@ -37,15 +37,31 @@ require("copybara").setup()
 
 ## Usage
 
-Run `:DrawMenu` in Normal mode or after selecting text in Visual mode.
+Run `:Copybara` in Normal mode or after selecting text in Visual mode to open the menu.
 
-A keymap is probably nicer:
+Every action also has a name you can pass directly, so you can skip the menu. Tab completes them.
+
+| Argument     | Copies                                              | Needs         |
+| ------------ | --------------------------------------------------- | ------------- |
+| `file_rel`   | `lua/copybara/init.lua`                             |               |
+| `file_abs`   | `/home/you/project/lua/copybara/init.lua`           |               |
+| `line_rel`   | `lua/copybara/init.lua#L50`                         |               |
+| `line_abs`   | `/home/you/project/lua/copybara/init.lua#L50`       |               |
+| `range_rel`  | `lua/copybara/init.lua#L10-L20`                     | a range       |
+| `range_abs`  | `/home/you/project/lua/copybara/init.lua#L10-L20`   | a range       |
+| `chars`      | `/home/you/project/lua/copybara/init.lua#L10C5-L20C12` | Visual mode |
+| `chars_text` | the `chars` reference, then the selected text       | Visual mode   |
+| `llm`        | `range_rel`, then the selected text                 | Visual mode   |
+
+Suggested keymaps:
 
 ```lua
-vim.keymap.set({ "n", "v" }, "<leader>cp", ":DrawMenu<CR>", { desc = "Copybara menu" })
+vim.keymap.set({ "n", "v" }, "<leader>cc", ":Copybara<CR>", { desc = "Copybara menu" })
+vim.keymap.set("n", "<leader>cf", ":Copybara file_rel<CR>", { desc = "Copy relative path" })
+vim.keymap.set("n", "<leader>cl", ":Copybara line_rel<CR>", { desc = "Copy line reference" })
+vim.keymap.set("v", "<leader>cl", ":Copybara range_rel<CR>", { desc = "Copy selected lines" })
+vim.keymap.set("v", "<leader>ca", ":Copybara llm<CR>", { desc = "Copy selection for an LLM" })
 ```
-
-Soon: Dedicated commands for each action  
 
 ## Options
 
