@@ -25,9 +25,10 @@ M.get_selection = function(opts)
 	local s, e = vim.fn.getpos("'<"), vim.fn.getpos("'>")
 	local mode = vim.fn.visualmode()
 	-- Marks describe this range only if Visual mode produced it
-	if mode ~= "" and s[2] == opts.line1 and e[2] == opts.line2 then
+	if mode ~= "" and s[2] == opts.line1 and e[2] == opts.line2 and vim.fn.exists("*getregion") == 1 then
 		selection.start.pos = s[3]
-		selection.finish.pos = math.min(e[3], #vim.fn.getline(e[2]))
+		-- Linewise marks report v:maxcol; empty lines report 0
+		selection.finish.pos = math.max(1, math.min(e[3], #vim.fn.getline(e[2])))
 		selection.text = table.concat(vim.fn.getregion(s, e, { type = mode }), "\n")
 	end
 

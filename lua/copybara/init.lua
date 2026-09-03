@@ -106,6 +106,10 @@ local function available_items(sel)
 end
 
 M.draw_copy_action_menu = function(opts)
+	if vim.api.nvim_buf_get_name(0) == "" then
+		notify("Copybara: buffer has no file name")
+		return
+	end
 	local selection = utils.get_selection(opts)
 	local items = available_items(selection)
 
