@@ -4,7 +4,7 @@ A tiny Neovim plugin for copying file references to your clipboard. Yes, I've mi
 
 Open a menu, pick what you want, and it's copied. That's it.
 
-![copybara menu](assets/oxMetKhE.png)
+![copybara menu](assets/demo.png)
 
 ## What it can copy
 
